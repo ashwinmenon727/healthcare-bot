@@ -1,5 +1,5 @@
 /**
- * MindCare Integration Test - verifies core modules work end-to-end.
+ * MINDORA Integration Test - verifies core modules work end-to-end.
  */
 const { analyzeSentiment, classifyEmotion, detectEmphasis } = require('./src/sentiment');
 const { calculateRiskScore, crisisResources, quickCrisisCheck } = require('./src/crisis');
@@ -70,13 +70,12 @@ check('greeting emotion', greeting.emotion === 'neutral');
 const joy = generateResponse('I aced my exam and I am so happy!');
 check('joy => joy reply', joy.emotion === 'joy');
 
-console.log('=== 5. SERVER ENDPOINTS ===');
-const express = require('express');
-const app = express();
-app.use(express.json());
+const whoAreYou = generateResponse('who are you');
+check('who are you => MINDORA', whoAreYou.reply.includes('MINDORA'));
 
-// Replicate server logic minimally
-    check('resources high (65) => 2', crisisResources(65).shown.length === 2);
+console.log('=== 5. RESOURCE LEVELS ===');
+check('resources high (65) => 2', crisisResources(65).shown.length === 2);
+check('resources moderate (40) => 1', crisisResources(40).shown.length === 1);
 
 console.log(`\n===== RESULTS: ${pass} passed, ${fail} failed =====`);
 process.exit(fail > 0 ? 1 : 0);

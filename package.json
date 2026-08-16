@@ -1,7 +1,7 @@
 {
-  "name": "mindcare-chatbot",
+  "name": "mindora",
   "version": "1.0.0",
-  "description": "MindCare - Empathetic AI Mental Health Chatbot with Sentiment Analysis, Emotion Classification, and Crisis Detection",
+  "description": "MINDORA - AI Mental Wellbeing Companion. Understand your feelings. Take the next step.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -9,13 +9,16 @@
     "test": "node test.js"
   },
   "keywords": [
-    "mental-health",
+    "mental-wellbeing",
     "chatbot",
     "sentiment-analysis",
+    "emotion-detection",
     "crisis-detection",
-    "college-project"
+    "mood-tracking",
+    "journaling",
+    "wellbeing"
   ],
-  "author": "MindCare Team",
+  "author": "MINDORA Team",
   "license": "MIT",
   "dependencies": {
     "express": "^4.19.2"

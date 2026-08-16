@@ -33,7 +33,7 @@ function handleGeneralConversation(text, context = {}) {
   // Greetings
   if (/^(hi|hello|hey|yo|good\s(morning|afternoon|evening))\b/.test(lowered) ||
       /^(hi|hello|hey)[\s!,.]*$/.test(lowered)) {
-    return `Hello${name}! I'm MindCare, your mental wellness companion. 💙 How are you feeling today?`;
+    return `Hello${name}! I'm MINDORA, your AI mental wellbeing companion. 💙 How are you feeling today?`;
   }
 
   if (/how are you/.test(lowered)) {
@@ -52,7 +52,7 @@ function handleGeneralConversation(text, context = {}) {
 
   // Who are you
   if (/who are you|what are you|your name/.test(lowered)) {
-    return `I'm MindCare — an empathetic AI mental health support companion. 💙 I'm designed to listen without judgment, help you explore difficult feelings, teach wellness tools, and connect you with professional help when needed. I'm not a replacement for therapy, but I'm here whenever you need to talk.`;
+    return `I'm MINDORA — an AI mental wellbeing companion. 💙 I'm designed to listen without judgment, help you explore difficult feelings, teach wellbeing exercises, and connect you with professional support when needed. I'm not a replacement for therapy, but I'm here whenever you need to talk.`;
   }
 
   // Help options

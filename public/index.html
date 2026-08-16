@@ -3,9 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MindCare - Your Mental Wellness Companion</title>
+  <meta name="description" content="MINDORA - AI Mental Wellbeing Companion. Understand your feelings. Take the next step." />
+  <meta name="theme-color" content="#1B2A4A" />
+  <title>MINDORA - Understand your feelings. Take the next step.</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 </head>
 <body>
@@ -16,8 +19,8 @@
       <div class="brand">
         <div class="brand-logo">💙</div>
         <div class="brand-text">
-          <h1>MindCare</h1>
-          <span>Your wellness companion</span>
+          <h1>MINDORA</h1>
+          <span>Understand your feelings. Take the next step.</span>
         </div>
       </div>
 
@@ -44,17 +47,17 @@
       </div>
 
       <div class="sidebar-section">
-        <h3>How MindCare helps</h3>
+        <h3>How MINDORA helps</h3>
         <ul class="feature-list">
           <li>💬 Empathetic conversations</li>
           <li>🧠 Sentiment & emotion analysis</li>
           <li>🛡️ Crisis risk detection</li>
-          <li>🧘 Therapy exercises (CBT, DBT)</li>
+          <li>🧘 Wellbeing exercises</li>
         </ul>
       </div>
 
       <div class="disclaimer">
-        ⚠️ MindCare is an AI support tool — not a replacement for professional help.
+        ⚠️ MINDORA is an AI wellbeing companion — not a replacement for professional help.
         In an emergency, call 911 (or your local emergency number).
       </div>
     </aside>
@@ -63,7 +66,7 @@
     <main class="chat-container">
       <header class="chat-header">
         <div class="chat-title">
-          <h2>Talk to MindCare</h2>
+          <h2>Talk to MINDORA</h2>
           <span class="online-indicator"><span class="dot"></span> Always here for you</span>
         </div>
         <button class="reset-btn" id="resetBtn" title="Start a new conversation">↺ New chat</button>
@@ -91,8 +94,9 @@
           placeholder="Share what's on your mind..."
           autocomplete="off"
           maxlength="500"
+          aria-label="Type your message"
         />
-        <button id="sendBtn" class="send-btn" title="Send message">
+        <button id="sendBtn" class="send-btn" title="Send message" aria-label="Send message">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
         </button>
       </div>
@@ -100,10 +104,10 @@
   </div>
 
   <!-- ══════════ BREATHING EXERCISE MODAL ══════════ -->
-  <div class="modal-overlay" id="breathingModal">
+  <div class="modal-overlay" id="breathingModal" role="dialog" aria-modal="true" aria-labelledby="breathingTitle">
     <div class="modal">
-      <button class="modal-close" data-close="breathingModal">✕</button>
-      <h2>🫁 Box Breathing</h2>
+      <button class="modal-close" data-close="breathingModal" aria-label="Close">✕</button>
+      <h2 id="breathingTitle">🫁 Box Breathing</h2>
       <p class="modal-subtitle">Follow the circle: In · Hold · Out · Hold</p>
       <div class="breathing-circle" id="breathingCircle">
         <span class="breathing-phase" id="breathingPhase">Breathe In</span>
@@ -119,29 +123,29 @@
   </div>
 
   <!-- ══════════ JOURNALING MODAL ══════════ -->
-  <div class="modal-overlay" id="journalingModal">
+  <div class="modal-overlay" id="journalingModal" role="dialog" aria-modal="true" aria-labelledby="journalTitle">
     <div class="modal">
-      <button class="modal-close" data-close="journalingModal">✕</button>
-      <h3>📔 Journaling</h3>
+      <button class="modal-close" data-close="journalingModal" aria-label="Close">✕</button>
+      <h3 id="journalTitle">📔 Journaling</h3>
       <p class="modal-subtitle">A gentle prompt to start:</p>
       <p class="journal-prompt" id="journalPrompt">"My mind is feeling ___, and what I need right now is ___."</p>
-      <textarea id="journalText" placeholder="Write a few lines... It doesn't have to be perfect." rows="6"></textarea>
+      <textarea id="journalText" placeholder="Write a few lines... It doesn't have to be perfect." rows="6" aria-label="Journal entry"></textarea>
       <div class="modal-actions">
         <button class="btn" id="saveJournalBtn">Save entry</button>
         <button class="btn ghost" id="newPromptBtn">New prompt</button>
       </div>
-      <p class="save-feedback" id="journalFeedback"></p>
+      <p class="save-feedback" id="journalFeedback" aria-live="polite"></p>
     </div>
   </div>
 
   <!-- ══════════ MOOD TRACKER MODAL ══════════ -->
-  <div class="modal-overlay" id="moodModal">
+  <div class="modal-overlay" id="moodModal" role="dialog" aria-modal="true" aria-labelledby="moodTitle">
     <div class="modal">
-      <button class="modal-close" data-close="moodModal">✕</button>
-      <h3>📊 Mood Check-In</h3>
+      <button class="modal-close" data-close="moodModal" aria-label="Close">✕</button>
+      <h3 id="moodTitle">📊 Mood Check-In</h3>
       <p class="modal-subtitle">How are you feeling right now? (1 = very low, 10 = amazing)</p>
       <div class="mood-slider-container">
-        <input type="range" id="moodSlider" min="1" max="10" value="5" class="mood-slider" />
+        <input type="range" id="moodSlider" min="1" max="10" value="5" class="mood-slider" aria-label="Mood level" />
         <div class="mood-value" id="moodValue">
           <span class="mood-number" id="moodNumber">5</span>
           <span class="mood-emoji" id="moodEmoji">😐</span>
@@ -159,10 +163,10 @@
   </div>
 
   <!-- ══════════ SOS MODAL ══════════ -->
-  <div class="modal-overlay" id="sosModal">
+  <div class="modal-overlay" id="sosModal" role="dialog" aria-modal="true" aria-labelledby="sosTitle">
     <div class="modal sos-modal">
-      <button class="modal-close" data-close="sosModal">✕</button>
-      <h3>🆘 You're not alone</h3>
+      <button class="modal-close" data-close="sosModal" aria-label="Close">✕</button>
+      <h3 id="sosTitle">🆘 You're not alone</h3>
       <p class="modal-subtitle">If you're in immediate danger, call emergency services now.</p>
       <div class="sos-resources">
         <div class="sos-resource">
@@ -189,5 +193,3 @@
   <script src="app.js"></script>
 </body>
 </html>
-</｜DSML｜parameter>
-</write_to_file>

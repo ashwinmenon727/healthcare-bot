@@ -37,12 +37,6 @@ const EMOTION_EMOJIS = {
 
 const MOOD_EMOJIS = ['😞', '😟', '😕', '😐', '🙂', '😊', '😄', '🤩'];
 
-/** Map a 1-10 mood value to an emoji index 0-7 */
-function moodToEmoji(value) {
-  const idx = Math.min(Math.floor(((value - 1) / 10) * 8), 7);
-  return MOOD_EMOJIS[idx];
-}
-
 /** ═══════════ MESSAGE RENDERING ═══════════ */
 // Escape helpers using char codes to avoid parser/formatter mangling
 const AMP = String.fromCharCode(38);  // &
@@ -146,7 +140,7 @@ function removeTypingIndicator() {
 /** ═══════════ WELCOME / RESET ═══════════ */
 function initWelcome() {
   addBotMessage(
-    "Hello! I'm **MindCare**, your mental wellness companion. 💙\n\nI'm here to listen without judgment, help you understand difficult feelings, and teach you practical tools like breathing, grounding, and journaling.\n\n**How are you feeling today?**"
+    "Hello! I'm **MINDORA**, your AI mental wellbeing companion. 💙\n\nI'm here to listen without judgment, help you understand difficult feelings, and teach you practical tools like breathing, grounding, and journaling.\n\n**How are you feeling today?**"
   );
 }
 
@@ -384,7 +378,7 @@ function renderMoodHistory() {
   });
 }
 
-function saveMood() {
+async function saveMood() {
   const value = parseInt(moodSlider.value, 10);
   moodHistory.push({ value, time: new Date().toISOString() });
   localStorage.setItem('mindcare_moods', JSON.stringify(moodHistory));
@@ -392,7 +386,7 @@ function saveMood() {
 
   // Send mood check-in as a chat message for engagement
   messageInput.value = `I'm feeling ${value}/10 right now.`;
-  sendMessage();
+  await sendMessage();
 }
 
 /** ═══════════ TOOL HANDLER ═══════════ */

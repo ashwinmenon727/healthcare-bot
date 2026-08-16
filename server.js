@@ -132,5 +132,5 @@ app.get('/api/health', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`💙 MindCare Chatbot running at http://localhost:${PORT}`);
+  console.log(`💙 MINDORA - AI Mental Wellbeing Companion running at http://localhost:${PORT}`);
 });
