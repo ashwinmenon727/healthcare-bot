@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindCare - Your Mental Wellness Companion</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- ══════════ SIDEBAR ══════════ -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">💙</div>
+        <div class="brand-text">
+          <h1>MindCare</h1>
+          <span>Your wellness companion</span>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Quick Tools</h3>
+        <button class="tool-btn" data-tool="breathing" title="Guided breathing exercise">
+          <span>🫁</span> Breathing
+        </button>
+        <button class="tool-btn" data-tool="journaling" title="Journaling prompts">
+          <span>📔</span> Journal
+        </button>
+        <button class="tool-btn" data-tool="mood" title="Track your mood">
+          <span>📊</span> Mood Tracker
+        </button>
+        <button class="tool-btn" data-tool="grounding" title="5-4-3-2-1 grounding technique">
+          <span>🌿</span> Grounding
+        </button>
+        <button class="tool-btn" data-tool="gratitude" title="Gratitude practice">
+          <span>🙏</span> Gratitude
+        </button>
+        <button class="tool-btn sos-btn" data-tool="sos" title="Emergency support">
+          <span>🆘</span> SOS
+        </button>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>How MindCare helps</h3>
+        <ul class="feature-list">
+          <li>💬 Empathetic conversations</li>
+          <li>🧠 Sentiment & emotion analysis</li>
+          <li>🛡️ Crisis risk detection</li>
+          <li>🧘 Therapy exercises (CBT, DBT)</li>
+        </ul>
+      </div>
+
+      <div class="disclaimer">
+        ⚠️ MindCare is an AI support tool — not a replacement for professional help.
+        In an emergency, call 911 (or your local emergency number).
+      </div>
+    </aside>
+
+    <!-- ══════════ MAIN CHAT AREA ══════════ -->
+    <main class="chat-container">
+      <header class="chat-header">
+        <div class="chat-title">
+          <h2>Talk to MindCare</h2>
+          <span class="online-indicator"><span class="dot"></span> Always here for you</span>
+        </div>
+        <button class="reset-btn" id="resetBtn" title="Start a new conversation">↺ New chat</button>
+      </header>
+
+      <!-- Messages -->
+      <div class="messages-area" id="messagesArea">
+        <!-- Messages are injected by app.js -->
+      </div>
+
+      <!-- Quick actions bar -->
+      <div class="quick-actions">
+        <button class="quick-btn" data-tool="breathing"><span>🫁</span> Breathing</button>
+        <button class="quick-btn" data-tool="journaling"><span>📔</span> Journal</button>
+        <button class="quick-btn" data-tool="mood"><span>📊</span> Mood check</button>
+        <button class="quick-btn" data-tool="grounding"><span>🌿</span> Grounding</button>
+        <button class="quick-btn sos-quick" data-tool="sos"><span>🆘</span> SOS</button>
+      </div>
+
+      <!-- Input area -->
+      <div class="input-area">
+        <input
+          type="text"
+          id="messageInput"
+          placeholder="Share what's on your mind..."
+          autocomplete="off"
+          maxlength="500"
+        />
+        <button id="sendBtn" class="send-btn" title="Send message">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <!-- ══════════ BREATHING EXERCISE MODAL ══════════ -->
+  <div class="modal-overlay" id="breathingModal">
+    <div class="modal">
+      <button class="modal-close" data-close="breathingModal">✕</button>
+      <h2>🫁 Box Breathing</h2>
+      <p class="modal-subtitle">Follow the circle: In · Hold · Out · Hold</p>
+      <div class="breathing-circle" id="breathingCircle">
+        <span class="breathing-phase" id="breathingPhase">Breathe In</span>
+        <span class="breathing-count" id="breathingCount">4</span>
+      </div>
+      <div class="breathing-controls">
+        <button class="btn" id="startBreathingBtn">Start</button>
+        <button class="btn ghost" id="pauseBreathingBtn" disabled>Pause</button>
+        <button class="btn ghost" data-close="breathingModal">Close</button>
+      </div>
+      <p class="modal-tip">Repeat for 5 minutes. Slow, steady breathing calms your nervous system.</p>
+    </div>
+  </div>
+
+  <!-- ══════════ JOURNALING MODAL ══════════ -->
+  <div class="modal-overlay" id="journalingModal">
+    <div class="modal">
+      <button class="modal-close" data-close="journalingModal">✕</button>
+      <h3>📔 Journaling</h3>
+      <p class="modal-subtitle">A gentle prompt to start:</p>
+      <p class="journal-prompt" id="journalPrompt">"My mind is feeling ___, and what I need right now is ___."</p>
+      <textarea id="journalText" placeholder="Write a few lines... It doesn't have to be perfect." rows="6"></textarea>
+      <div class="modal-actions">
+        <button class="btn" id="saveJournalBtn">Save entry</button>
+        <button class="btn ghost" id="newPromptBtn">New prompt</button>
+      </div>
+      <p class="save-feedback" id="journalFeedback"></p>
+    </div>
+  </div>
+
+  <!-- ══════════ MOOD TRACKER MODAL ══════════ -->
+  <div class="modal-overlay" id="moodModal">
+    <div class="modal">
+      <button class="modal-close" data-close="moodModal">✕</button>
+      <h3>📊 Mood Check-In</h3>
+      <p class="modal-subtitle">How are you feeling right now? (1 = very low, 10 = amazing)</p>
+      <div class="mood-slider-container">
+        <input type="range" id="moodSlider" min="1" max="10" value="5" class="mood-slider" />
+        <div class="mood-value" id="moodValue">
+          <span class="mood-number" id="moodNumber">5</span>
+          <span class="mood-emoji" id="moodEmoji">😐</span>
+        </div>
+      </div>
+      <div class="mood-labels"><span>Very low</span><span>Neutral</span><span>Amazing</span></div>
+      <div class="mood-history" id="moodHistory">
+        <h4>Your recent moods</h4>
+        <div id="moodHistoryList"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" id="saveMoodBtn">Save mood</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ SOS MODAL ══════════ -->
+  <div class="modal-overlay" id="sosModal">
+    <div class="modal sos-modal">
+      <button class="modal-close" data-close="sosModal">✕</button>
+      <h3>🆘 You're not alone</h3>
+      <p class="modal-subtitle">If you're in immediate danger, call emergency services now.</p>
+      <div class="sos-resources">
+        <div class="sos-resource">
+          <span class="res-icon">📞</span>
+          <div><strong>Emergency services</strong><p>911 (US) · 999 (UK) · 112 (EU)</p></div>
+        </div>
+        <div class="sos-resource">
+          <span class="res-icon">💬</span>
+          <div><strong>Crisis Text Line</strong><p>Text HOME to 741741</p></div>
+        </div>
+        <div class="sos-resource">
+          <span class="res-icon">🌐</span>
+          <div><strong>Suicide Prevention Lifeline</strong><p>1-800-273-8255</p></div>
+        </div>
+        <div class="sos-resource">
+          <span class="res-icon">🌍</span>
+          <div><strong>International Resources</strong><p>iasp.info/resources/Crisis_Centres/</p></div>
+        </div>
+      </div>
+      <button class="btn emergency-btn" data-close="sosModal">I understand — stay here with me</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+</｜DSML｜parameter>
+</write_to_file>
