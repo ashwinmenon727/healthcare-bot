@@ -1,9 +1,9 @@
-/* ═══════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    MINDORA - AI Mental Wellbeing Companion
    Design System
-   ═══════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ─── Design Tokens ─── */
+/* â”€â”€â”€ Design Tokens â”€â”€â”€ */
 :root {
   /* Primary: deep navy / blue */
   --primary: #1B2A4A;
@@ -65,7 +65,7 @@
   --transition-slow: 0.3s ease;
 }
 
-/* ─── Reset ─── */
+/* â”€â”€â”€ Reset â”€â”€â”€ */
 * {
   margin: 0;
   padding: 0;
@@ -87,14 +87,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ─── Focus states (accessibility) ─── */
+/* â”€â”€â”€ Focus states (accessibility) â”€â”€â”€ */
 :focus-visible {
   outline: 3px solid var(--secondary);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
-/* ─── Reduced motion ─── */
+/* â”€â”€â”€ Reduced motion â”€â”€â”€ */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -104,7 +104,7 @@ body {
   }
 }
 
-/* ═══════════ APP LAYOUT ═══════════ */
+/* â•â•â•â•â•â•â•â•â•â•â• APP LAYOUT â•â•â•â•â•â•â•â•â•â•â• */
 .app-container {
   display: flex;
   min-height: 100vh;
@@ -113,7 +113,7 @@ body {
   width: 100%;
 }
 
-/* ═══════════ SIDEBAR ═══════════ */
+/* â•â•â•â•â•â•â•â•â•â•â• SIDEBAR â•â•â•â•â•â•â•â•â•â•â• */
 .sidebar {
   width: 280px;
   min-width: 280px;
@@ -229,7 +229,7 @@ body {
   line-height: 1.6;
 }
 
-/* ═══════════ MAIN CHAT ═══════════ */
+/* â•â•â•â•â•â•â•â•â•â•â• MAIN CHAT â•â•â•â•â•â•â•â•â•â•â• */
 .chat-container {
   flex: 1;
   display: flex;
@@ -297,7 +297,7 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
-/* ═══════════ MESSAGES AREA ═══════════ */
+/* â•â•â•â•â•â•â•â•â•â•â• MESSAGES AREA â•â•â•â•â•â•â•â•â•â•â• */
 .messages-area {
   flex: 1;
   overflow-y: auto;
@@ -449,11 +449,117 @@ body {
 }
 
 .crisis-banner li::before {
-  content: "⚠️ ";
+  content: "âš ï¸ ";
+}
+
+/* Quick prompts */
+.quick-prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: 0 var(--space-5) var(--space-3);
+  max-height: 180px;
+  overflow-y: auto;
+  align-content: flex-start;
+}
+
+.quick-prompts.hidden {
+  display: none;
+}
+
+.quick-prompt-btn {
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  padding: var(--space-3) var(--space-4);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: inherit;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 140px;
+}
+
+.quick-prompt-btn:hover {
+  background: var(--secondary-light);
+  border-color: var(--secondary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.quick-prompt-btn:active {
+  transform: translateY(0) scale(0.97);
+}
+
+/* Message actions */
+.message-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.action-btn {
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: white;
+  color: var(--text-light);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  transition: all var(--transition);
+  opacity: 0.5;
+}
+
+.message:hover .action-btn {
+  opacity: 1;
+}
+
+.action-btn:hover {
+  background: var(--secondary);
+  color: white;
+  border-color: var(--secondary);
+  transform: scale(1.1);
+}
+
+.action-btn.delete-btn:hover {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: white;
+}
+
+/* Tooltip */
+.tooltip {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: 2000;
+  white-space: nowrap;
+}
+
+.tooltip.show {
+  opacity: 1;
 }
 
 /* Bot typing indicator */
 .typing-indicator {
+
   display: flex;
   gap: 4px;
   padding: var(--space-4) var(--space-5);
@@ -475,7 +581,7 @@ body {
   30% { transform: translateY(-8px); opacity: 1; }
 }
 
-/* ═══════════ QUICK ACTIONS & INPUT ═══════════ */
+/* â•â•â•â•â•â•â•â•â•â•â• QUICK ACTIONS & INPUT â•â•â•â•â•â•â•â•â•â•â• */
 .quick-actions {
   display: flex;
   gap: var(--space-2);
@@ -585,7 +691,7 @@ body {
   transform: none;
 }
 
-/* ═══════════ MODALS ═══════════ */
+/* â•â•â•â•â•â•â•â•â•â•â• MODALS â•â•â•â•â•â•â•â•â•â•â• */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -949,7 +1055,7 @@ textarea:focus {
 ::-webkit-scrollbar-thumb { background: linear-gradient(var(--secondary-light), var(--secondary)); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--secondary); }
 
-/* ═══════════ AUTH VIEW ═══════════ */
+/* â•â•â•â•â•â•â•â•â•â•â• AUTH VIEW â•â•â•â•â•â•â•â•â•â•â• */
 .auth-view {
   min-height: 100vh;
   display: flex;
@@ -1085,7 +1191,7 @@ textarea:focus {
   line-height: 1.5;
 }
 
-/* ═══════════ MAIN CONTENT ═══════════ */
+/* â•â•â•â•â•â•â•â•â•â•â• MAIN CONTENT â•â•â•â•â•â•â•â•â•â•â• */
 .main-content {
   flex: 1;
   display: flex;
@@ -1095,7 +1201,7 @@ textarea:focus {
   overflow: hidden;
 }
 
-/* ═══════════ DASHBOARD VIEW ═══════════ */
+/* â•â•â•â•â•â•â•â•â•â•â• DASHBOARD VIEW â•â•â•â•â•â•â•â•â•â•â• */
 .dashboard-view {
   flex: 1;
   overflow-y: auto;
@@ -1285,7 +1391,7 @@ textarea:focus {
   line-height: 1.5;
 }
 
-/* ═══════════ CHAT VIEW ═══════════ */
+/* â•â•â•â•â•â•â•â•â•â•â• CHAT VIEW â•â•â•â•â•â•â•â•â•â•â• */
 .chat-view {
   flex: 1;
   display: flex;
@@ -1297,7 +1403,7 @@ textarea:focus {
   display: none !important;
 }
 
-/* ════════════ RESPONSIVE ════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â• RESPONSIVE â•â•â•â•â•â•â•â•â•â•â•â• */
 @media (max-width: 768px) {
   .app-container { flex-direction: column; }
   .sidebar { width: 100%; min-width: 0; max-height: none; gap: var(--space-3); padding: var(--space-4); }

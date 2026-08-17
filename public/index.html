@@ -13,11 +13,11 @@
 </head>
 <body>
 
-  <!-- ══════════ AUTH VIEW ══════════ -->
+  <!-- â•â•â•â•â•â•â•â•â•â• AUTH VIEW â•â•â•â•â•â•â•â•â•â• -->
   <div class="auth-view" id="authView">
     <div class="auth-card">
       <div class="auth-brand">
-        <div class="brand-logo">💙</div>
+        <div class="brand-logo">ðŸ’™</div>
         <h1>MINDORA</h1>
         <p>Understand your feelings. Take the next step.</p>
       </div>
@@ -53,17 +53,17 @@
         <p class="auth-feedback" id="registerFeedback" aria-live="polite"></p>
       </form>
 
-      <p class="auth-disclaimer">MINDORA is an AI wellbeing companion — not a replacement for professional help.</p>
+      <p class="auth-disclaimer">MINDORA is an AI wellbeing companion â€” not a replacement for professional help.</p>
     </div>
   </div>
 
-  <!-- ══════════ APP VIEW (Dashboard + Chat) ══════════ -->
+  <!-- â•â•â•â•â•â•â•â•â•â• APP VIEW (Dashboard + Chat) â•â•â•â•â•â•â•â•â•â• -->
   <div class="app-container hidden" id="appView">
 
-    <!-- ══════════ SIDEBAR ══════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â• SIDEBAR â•â•â•â•â•â•â•â•â•â• -->
     <aside class="sidebar">
       <div class="brand">
-        <div class="brand-logo">💙</div>
+        <div class="brand-logo">ðŸ’™</div>
         <div class="brand-text">
           <h1>MINDORA</h1>
           <span>Understand your feelings. Take the next step.</span>
@@ -73,52 +73,52 @@
       <div class="sidebar-section">
         <h3>Navigation</h3>
         <button class="tool-btn active" id="navDashboard" data-nav="dashboard">
-          <span>🏠</span> Dashboard
+          <span>ðŸ </span> Dashboard
         </button>
         <button class="tool-btn" id="navChat" data-nav="chat">
-          <span>💬</span> Talk to MINDORA
+          <span>ðŸ’¬</span> Talk to MINDORA
         </button>
       </div>
 
       <div class="sidebar-section">
         <h3>Quick Tools</h3>
         <button class="tool-btn" data-tool="breathing" title="Guided breathing exercise">
-          <span>🫁</span> Breathing
+          <span>ðŸ«</span> Breathing
         </button>
         <button class="tool-btn" data-tool="journaling" title="Journaling prompts">
-          <span>📔</span> Journal
+          <span>ðŸ“”</span> Journal
         </button>
         <button class="tool-btn" data-tool="mood" title="Track your mood">
-          <span>📊</span> Mood Tracker
+          <span>ðŸ“Š</span> Mood Tracker
         </button>
         <button class="tool-btn" data-tool="grounding" title="5-4-3-2-1 grounding technique">
-          <span>🌿</span> Grounding
+          <span>ðŸŒ¿</span> Grounding
         </button>
         <button class="tool-btn" data-tool="gratitude" title="Gratitude practice">
-          <span>🙏</span> Gratitude
+          <span>ðŸ™</span> Gratitude
         </button>
         <button class="tool-btn sos-btn" data-tool="sos" title="Emergency support">
-          <span>🆘</span> SOS
+          <span>ðŸ†˜</span> SOS
         </button>
       </div>
 
       <div class="sidebar-section">
         <h3>Account</h3>
         <button class="tool-btn" id="logoutBtn" title="Sign out">
-          <span>🚪</span> Sign Out
+          <span>ðŸšª</span> Sign Out
         </button>
       </div>
 
       <div class="disclaimer">
-        ⚠️ MINDORA is an AI wellbeing companion — not a replacement for professional help.
+        âš ï¸ MINDORA is an AI wellbeing companion â€” not a replacement for professional help.
         In an emergency, call 911 (or your local emergency number).
       </div>
     </aside>
 
-    <!-- ══════════ MAIN CONTENT ══════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â• MAIN CONTENT â•â•â•â•â•â•â•â•â•â• -->
     <main class="main-content">
 
-      <!-- ══════════ DASHBOARD VIEW ══════════ -->
+      <!-- â•â•â•â•â•â•â•â•â•â• DASHBOARD VIEW â•â•â•â•â•â•â•â•â•â• -->
       <section class="dashboard-view" id="dashboardView">
         <header class="dashboard-header">
           <div>
@@ -132,23 +132,23 @@
           <h3>How are you feeling today?</h3>
           <div class="mood-selector" id="moodSelector">
             <button class="mood-option" data-mood="1" title="Very Low">
-              <span class="mood-emoji-large">😞</span>
+              <span class="mood-emoji-large">ðŸ˜ž</span>
               <span class="mood-label">Very Low</span>
             </button>
             <button class="mood-option" data-mood="3" title="Low">
-              <span class="mood-emoji-large">😟</span>
+              <span class="mood-emoji-large">ðŸ˜Ÿ</span>
               <span class="mood-label">Low</span>
             </button>
             <button class="mood-option" data-mood="5" title="Neutral">
-              <span class="mood-emoji-large">😐</span>
+              <span class="mood-emoji-large">ðŸ˜</span>
               <span class="mood-label">Neutral</span>
             </button>
             <button class="mood-option" data-mood="7" title="Good">
-              <span class="mood-emoji-large">🙂</span>
+              <span class="mood-emoji-large">ðŸ™‚</span>
               <span class="mood-label">Good</span>
             </button>
             <button class="mood-option" data-mood="9" title="Great">
-              <span class="mood-emoji-large">😊</span>
+              <span class="mood-emoji-large">ðŸ˜Š</span>
               <span class="mood-label">Great</span>
             </button>
           </div>
@@ -159,12 +159,12 @@
         <div class="dashboard-grid">
           <div class="dashboard-card">
             <h4>Today's Mood</h4>
-            <div class="card-value" id="todayMood">—</div>
+            <div class="card-value" id="todayMood">â€”</div>
             <p class="card-hint">Your mood check-in for today</p>
           </div>
           <div class="dashboard-card">
             <h4>Recent Trend</h4>
-            <div class="card-value" id="moodTrend">—</div>
+            <div class="card-value" id="moodTrend">â€”</div>
             <p class="card-hint">Your mood over the last week</p>
           </div>
           <div class="dashboard-card">
@@ -174,7 +174,7 @@
           </div>
           <div class="dashboard-card">
             <h4>AI Companion</h4>
-            <div class="card-value">💬</div>
+            <div class="card-value">ðŸ’¬</div>
             <p class="card-hint">Talk to MINDORA anytime</p>
             <button class="btn small" id="dashboardChatBtn">Start a conversation</button>
           </div>
@@ -189,14 +189,14 @@
         </div>
       </section>
 
-      <!-- ══════════ CHAT VIEW ══════════ -->
+      <!-- â•â•â•â•â•â•â•â•â•â• CHAT VIEW â•â•â•â•â•â•â•â•â•â• -->
       <section class="chat-view hidden" id="chatView">
         <header class="chat-header">
           <div class="chat-title">
             <h2>Talk to MINDORA</h2>
             <span class="online-indicator"><span class="dot"></span> Always here for you</span>
           </div>
-          <button class="reset-btn" id="resetBtn" title="Start a new conversation">↺ New chat</button>
+          <button class="reset-btn" id="resetBtn" title="Start a new conversation">â†º New chat</button>
         </header>
 
         <!-- Messages -->
@@ -204,13 +204,23 @@
           <!-- Messages are injected by app.js -->
         </div>
 
+        <!-- Quick prompts (shown initially / on new chat) -->
+        <div class="quick-prompts" id="quickPrompts">
+          <button class="quick-prompt-btn" data-prompt="I'm feeling overwhelmed">I'm feeling overwhelmed</button>
+          <button class="quick-prompt-btn" data-prompt="I can't sleep">I can't sleep</button>
+          <button class="quick-prompt-btn" data-prompt="I need motivation">I need motivation</button>
+          <button class="quick-prompt-btn" data-prompt="I want to talk">I want to talk</button>
+          <button class="quick-prompt-btn" data-prompt="Help me calm down">Help me calm down</button>
+        </div>
+
+
         <!-- Quick actions bar -->
         <div class="quick-actions">
-          <button class="quick-btn" data-tool="breathing"><span>🫁</span> Breathing</button>
-          <button class="quick-btn" data-tool="journaling"><span>📔</span> Journal</button>
-          <button class="quick-btn" data-tool="mood"><span>📊</span> Mood check</button>
-          <button class="quick-btn" data-tool="grounding"><span>🌿</span> Grounding</button>
-          <button class="quick-btn sos-quick" data-tool="sos"><span>🆘</span> SOS</button>
+          <button class="quick-btn" data-tool="breathing"><span>ðŸ«</span> Breathing</button>
+          <button class="quick-btn" data-tool="journaling"><span>ðŸ“”</span> Journal</button>
+          <button class="quick-btn" data-tool="mood"><span>ðŸ“Š</span> Mood check</button>
+          <button class="quick-btn" data-tool="grounding"><span>ðŸŒ¿</span> Grounding</button>
+          <button class="quick-btn sos-quick" data-tool="sos"><span>ðŸ†˜</span> SOS</button>
         </div>
 
         <!-- Input area -->
@@ -232,12 +242,12 @@
     </main>
   </div>
 
-  <!-- ══════════ BREATHING EXERCISE MODAL ══════════ -->
+  <!-- â•â•â•â•â•â•â•â•â•â• BREATHING EXERCISE MODAL â•â•â•â•â•â•â•â•â•â• -->
   <div class="modal-overlay" id="breathingModal" role="dialog" aria-modal="true" aria-labelledby="breathingTitle">
     <div class="modal">
-      <button class="modal-close" data-close="breathingModal" aria-label="Close">✕</button>
-      <h2 id="breathingTitle">🫁 Box Breathing</h2>
-      <p class="modal-subtitle">Follow the circle: In · Hold · Out · Hold</p>
+      <button class="modal-close" data-close="breathingModal" aria-label="Close">âœ•</button>
+      <h2 id="breathingTitle">ðŸ« Box Breathing</h2>
+      <p class="modal-subtitle">Follow the circle: In Â· Hold Â· Out Â· Hold</p>
       <div class="breathing-circle" id="breathingCircle">
         <span class="breathing-phase" id="breathingPhase">Breathe In</span>
         <span class="breathing-count" id="breathingCount">4</span>
@@ -251,11 +261,11 @@
     </div>
   </div>
 
-  <!-- ══════════ JOURNALING MODAL ══════════ -->
+  <!-- â•â•â•â•â•â•â•â•â•â• JOURNALING MODAL â•â•â•â•â•â•â•â•â•â• -->
   <div class="modal-overlay" id="journalingModal" role="dialog" aria-modal="true" aria-labelledby="journalTitle">
     <div class="modal">
-      <button class="modal-close" data-close="journalingModal" aria-label="Close">✕</button>
-      <h3 id="journalTitle">📔 Journaling</h3>
+      <button class="modal-close" data-close="journalingModal" aria-label="Close">âœ•</button>
+      <h3 id="journalTitle">ðŸ“” Journaling</h3>
       <p class="modal-subtitle">A gentle prompt to start:</p>
       <p class="journal-prompt" id="journalPrompt">"My mind is feeling ___, and what I need right now is ___."</p>
       <textarea id="journalText" placeholder="Write a few lines... It doesn't have to be perfect." rows="6" aria-label="Journal entry"></textarea>
@@ -267,17 +277,17 @@
     </div>
   </div>
 
-  <!-- ══════════ MOOD TRACKER MODAL ══════════ -->
+  <!-- â•â•â•â•â•â•â•â•â•â• MOOD TRACKER MODAL â•â•â•â•â•â•â•â•â•â• -->
   <div class="modal-overlay" id="moodModal" role="dialog" aria-modal="true" aria-labelledby="moodTitle">
     <div class="modal">
-      <button class="modal-close" data-close="moodModal" aria-label="Close">✕</button>
-      <h3 id="moodTitle">📊 Mood Check-In</h3>
+      <button class="modal-close" data-close="moodModal" aria-label="Close">âœ•</button>
+      <h3 id="moodTitle">ðŸ“Š Mood Check-In</h3>
       <p class="modal-subtitle">How are you feeling right now? (1 = very low, 10 = amazing)</p>
       <div class="mood-slider-container">
         <input type="range" id="moodSlider" min="1" max="10" value="5" class="mood-slider" aria-label="Mood level" />
         <div class="mood-value" id="moodValue">
           <span class="mood-number" id="moodNumber">5</span>
-          <span class="mood-emoji" id="moodEmoji">😐</span>
+          <span class="mood-emoji" id="moodEmoji">ðŸ˜</span>
         </div>
       </div>
       <div class="mood-labels"><span>Very low</span><span>Neutral</span><span>Amazing</span></div>
@@ -291,31 +301,31 @@
     </div>
   </div>
 
-  <!-- ══════════ SOS MODAL ══════════ -->
+  <!-- â•â•â•â•â•â•â•â•â•â• SOS MODAL â•â•â•â•â•â•â•â•â•â• -->
   <div class="modal-overlay" id="sosModal" role="dialog" aria-modal="true" aria-labelledby="sosTitle">
     <div class="modal sos-modal">
-      <button class="modal-close" data-close="sosModal" aria-label="Close">✕</button>
-      <h3 id="sosTitle">🆘 You're not alone</h3>
+      <button class="modal-close" data-close="sosModal" aria-label="Close">âœ•</button>
+      <h3 id="sosTitle">ðŸ†˜ You're not alone</h3>
       <p class="modal-subtitle">If you're in immediate danger, call emergency services now.</p>
       <div class="sos-resources">
         <div class="sos-resource">
-          <span class="res-icon">📞</span>
-          <div><strong>Emergency services</strong><p>911 (US) · 999 (UK) · 112 (EU)</p></div>
+          <span class="res-icon">ðŸ“ž</span>
+          <div><strong>Emergency services</strong><p>911 (US) Â· 999 (UK) Â· 112 (EU)</p></div>
         </div>
         <div class="sos-resource">
-          <span class="res-icon">💬</span>
+          <span class="res-icon">ðŸ’¬</span>
           <div><strong>Crisis Text Line</strong><p>Text HOME to 741741</p></div>
         </div>
         <div class="sos-resource">
-          <span class="res-icon">🌐</span>
+          <span class="res-icon">ðŸŒ</span>
           <div><strong>Suicide Prevention Lifeline</strong><p>1-800-273-8255</p></div>
         </div>
         <div class="sos-resource">
-          <span class="res-icon">🌍</span>
+          <span class="res-icon">ðŸŒ</span>
           <div><strong>International Resources</strong><p>iasp.info/resources/Crisis_Centres/</p></div>
         </div>
       </div>
-      <button class="btn emergency-btn" data-close="sosModal">I understand — stay here with me</button>
+      <button class="btn emergency-btn" data-close="sosModal">I understand â€” stay here with me</button>
     </div>
   </div>
 

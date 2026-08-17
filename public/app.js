@@ -23,6 +23,7 @@ const messagesArea = document.getElementById('messagesArea');
 const messageInput = document.getElementById('messageInput');
 const sendBtn = document.getElementById('sendBtn');
 const resetBtn = document.getElementById('resetBtn');
+const quickPrompts = document.getElementById('quickPrompts');
 
 const breathingModal = document.getElementById('breathingModal');
 const journalingModal = document.getElementById('journalingModal');
@@ -33,7 +34,7 @@ const moodSlider = document.getElementById('moodSlider');
 const moodNumber = document.getElementById('moodNumber');
 const moodEmoji = document.getElementById('moodEmoji');
 
-// ═══════════ EMOTION EMOJI MAP ═══════════
+// ═══════════ EMOJI MAPS ═══════════
 const EMOTION_EMOJIS = {
   joy: '😊',
   sadness: '😔',
@@ -55,6 +56,35 @@ function moodLabelFor(value) {
   if (value <= 6) return 'Neutral';
   if (value <= 8) return 'Good';
   return 'Great';
+}
+
+// ═══════════ ESCAPE HELPERS ═══════════
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = String(str);
+  return div.innerHTML;
+}
+
+function formatMessage(text) {
+  if (!text) return '';
+  return escapeHtml(text)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(?![*])(.+?)\*/g, '<em>$1</em>')
+    .replace(/\n/g, '<br/>');
+}
+
+// ═══════════ TOOLTIP ═══════════
+function showTooltip(text) {
+  let tip = document.getElementById('copyTooltip');
+  if (!tip) {
+    tip = document.createElement('div');
+    tip.id = 'copyTooltip';
+    tip.className = 'tooltip';
+    document.body.appendChild(tip);
+  }
+  tip.textContent = text;
+  tip.classList.add('show');
+  setTimeout(() => tip.classList.remove('show'), 1500);
 }
 
 // ═══════════ AUTH ═══════════
@@ -84,6 +114,8 @@ function showView(view) {
     chatView.classList.remove('hidden');
     document.querySelectorAll('[data-nav]').forEach(b => b.classList.remove('active'));
     document.getElementById('navChat').classList.add('active');
+    if (messagesArea.children.length <= 1) initWelcome();
+    toggleQuickPrompts();
     messageInput.focus();
   }
 }
@@ -163,11 +195,9 @@ async function handleLogout() {
   try {
     await fetch('/api/auth/logout', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${authToken}` }
+      headers: { 'Authorization': 'Bearer ' + authToken }
     });
-  } catch (err) {
-    // Ignore logout errors
-  }
+  } catch (err) { }
   authToken = null;
   currentUser = null;
   localStorage.removeItem('mindora_token');
@@ -179,12 +209,13 @@ async function loadUserData() {
   if (!authToken) return;
   try {
     const res = await fetch('/api/user/data', {
-      headers: { 'Authorization': `Bearer ${authToken}` }
+      headers: { 'Authorization': 'Bearer ' + authToken }
     });
     const data = await res.json();
     if (data.success) {
       currentUser = data.data;
-      document.getElementById('dashboardUserName').textContent = currentUser.username ? `, ${currentUser.username}` : '';
+      document.getElementById('dashboardUserName').textContent = currentUser.username ? ', ' + currentUser.username : '';
+      renderDashboard();
     }
   } catch (err) {
     console.error('Error loading user data:', err);
@@ -203,13 +234,13 @@ async function saveMoodFromDashboard(value) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authToken}`
+        'Authorization': 'Bearer ' + authToken
       },
       body: JSON.stringify({ value })
     });
     const data = await res.json();
     if (data.success) {
-      feedback.textContent = `Thanks for sharing. You're feeling ${moodLabelFor(value)} today. 💙`;
+      feedback.textContent = "Thanks for sharing. You're feeling " + moodLabelFor(value) + " today.";
       feedback.className = 'mood-feedback success';
       loadUserData();
       renderDashboard();
@@ -231,7 +262,7 @@ function renderDashboard() {
   const today = new Date().toDateString();
   const todayMoods = moods.filter(m => new Date(m.timestamp).toDateString() === today);
   const todayMood = todayMoods.length > 0 ? todayMoods[todayMoods.length - 1].value : null;
-  document.getElementById('todayMood').textContent = todayMood ? `${moodEmojiFor(todayMood)} ${moodLabelFor(todayMood)}` : '—';
+  document.getElementById('todayMood').textContent = todayMood ? moodEmojiFor(todayMood) + ' ' + moodLabelFor(todayMood) : '—';
 
   // Recent trend
   const last7 = moods.slice(-7);
@@ -258,40 +289,48 @@ function renderDashboard() {
       div.className = 'journal-preview';
       const date = new Date(entry.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       const text = entry.text.length > 100 ? entry.text.slice(0, 100) + '...' : entry.text;
-      div.innerHTML = `<span class="journal-date">${date}</span><p>${escapeHtml(text)}</p>`;
+      div.innerHTML = '<span class="journal-date">' + date + '</span><p>' + escapeHtml(text) + '</p>';
       recentList.appendChild(div);
     });
   }
 }
 
 // ═══════════ MESSAGE RENDERING ═══════════
-const AMP = String.fromCharCode(38);
-const LT = String.fromCharCode(60);
-const GT = String.fromCharCode(62);
-
-function escapeHtml(str) {
-  return String(str)
-    .replace(new RegExp(AMP, 'g'), AMP + 'amp;')
-    .replace(new RegExp(LT, 'g'), LT + '#x3c;')
-    .replace(new RegExp(GT, 'g'), GT + '#x3e;');
-}
-
-function formatMessage(text) {
-  if (!text) return '';
-  return escapeHtml(text)
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(?![*])(.+?)\*/g, '<em>$1</em>')
-    .replace(/\n/g, '<br/>');
-}
 
 function addMessage(content, role, meta = {}) {
   const messageDiv = document.createElement('div');
-  messageDiv.className = `message ${role}`;
+  messageDiv.className = 'message ' + role;
 
   const bubble = document.createElement('div');
   bubble.className = 'message-bubble';
   bubble.innerHTML = formatMessage(content);
   messageDiv.appendChild(bubble);
+
+  // Message actions (copy, retry, delete)
+  if (role === 'bot') {
+    const actions = document.createElement('div');
+    actions.className = 'message-actions';
+    actions.innerHTML = '<button class="action-btn copy-btn" title="Copy" aria-label="Copy response">&#128203;</button>';
+    if (meta.crisis && meta.crisis.level && (meta.crisis.level === 'high' || meta.crisis.level === 'severe')) {
+      actions.innerHTML += '<button class="action-btn retry-btn" title="Get a different response" aria-label="Retry">&#x1f504;</button>';
+    }
+    messageDiv.appendChild(actions);
+  }
+
+  if (role === 'user') {
+    const actions = document.createElement('div');
+    actions.className = 'message-actions';
+    const delBtn = document.createElement('button');
+    delBtn.className = 'action-btn delete-btn';
+    delBtn.title = 'Delete message';
+    delBtn.setAttribute('aria-label', 'Delete message');
+    delBtn.innerHTML = '&#x9425;';
+    delBtn.addEventListener('click', () => {
+      messageDiv.remove();
+    });
+    actions.appendChild(delBtn);
+    messageDiv.appendChild(actions);
+  }
 
   if (role === 'user' && meta.sentiment) {
     const metaDiv = document.createElement('div');
@@ -300,19 +339,19 @@ function addMessage(content, role, meta = {}) {
     if (meta.emotion) {
       const emotionChip = document.createElement('span');
       emotionChip.className = 'emotion-chip';
-      emotionChip.textContent = `${EMOTION_EMOJIS[meta.emotion] || '😐'} ${meta.emotion}`;
+      emotionChip.textContent = (EMOTION_EMOJIS[meta.emotion] || '😐') + ' ' + meta.emotion;
       metaDiv.appendChild(emotionChip);
     }
 
     const sentimentBadge = document.createElement('span');
-    sentimentBadge.className = `sentiment-badge sentiment-${meta.sentiment}`;
-    sentimentBadge.textContent = meta.sentiment;
+    sentimentBadge.className = 'sentiment-badge sentiment-' + (meta.sentiment || 'neutral');
+    sentimentBadge.textContent = meta.sentiment || 'neutral';
     metaDiv.appendChild(sentimentBadge);
 
     if (meta.risk && meta.risk.level && meta.risk.level !== 'low') {
       const riskBadge = document.createElement('span');
-      riskBadge.className = `risk-badge risk-${meta.risk.level}`;
-      riskBadge.textContent = `Risk: ${meta.risk.score}/100`;
+      riskBadge.className = 'risk-badge risk-' + meta.risk.level;
+      riskBadge.textContent = 'Risk: ' + meta.risk.score + '/100';
       metaDiv.appendChild(riskBadge);
     }
 
@@ -324,18 +363,31 @@ function addMessage(content, role, meta = {}) {
     banner.className = 'crisis-banner';
 
     const title = document.createElement('h4');
-    title.textContent = '🚨 Crisis resources';
+    title.textContent = ' Crisis resources';
 
     const list = document.createElement('ul');
     (meta.crisis.resources || []).forEach(r => {
       const li = document.createElement('li');
-      li.innerHTML = `<strong>${escapeHtml(r.name || '')}</strong>: ${escapeHtml(r.detail || '')}`;
+      li.innerHTML = '<strong>' + escapeHtml(r.name || '') + '</strong>: ' + escapeHtml(r.detail || '');
       list.appendChild(li);
     });
 
     banner.appendChild(title);
     banner.appendChild(list);
     messageDiv.appendChild(banner);
+  }
+
+  // Add event listener for copy button
+  const copyBtn = messageDiv.querySelector('.copy-btn');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', () => {
+      const textToCopy = bubble.textContent || bubble.innerText;
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        showTooltip('Copied!');
+      }).catch(() => {
+        showTooltip('Could not copy');
+      });
+    });
   }
 
   messagesArea.appendChild(messageDiv);
@@ -361,21 +413,52 @@ function removeTypingIndicator() {
   if (typing) typing.remove();
 }
 
-/** ═══════════ WELCOME / RESET ═══════════ */
+// ═══════════ QUICK PROMPTS ═══════════
+
+function toggleQuickPrompts() {
+  if (!quickPrompts) return;
+  const messageCount = messagesArea.querySelectorAll('.message').length;
+  // Show quick prompts when there is only the welcome message (or no messages)
+  if (messageCount <= 1) {
+    quickPrompts.classList.remove('hidden');
+  } else {
+    quickPrompts.classList.add('hidden');
+  }
+}
+
+// ═══════════ WELCOME / RESET ═══════════
+
 function initWelcome() {
   addBotMessage(
-    "Hello! I'm **MINDORA**, your AI mental wellbeing companion. 💙\n\nI'm here to listen without judgment, help you understand difficult feelings, and teach you practical tools like breathing, grounding, and journaling.\n\n**How are you feeling today?**"
+    "Hello! I'm **MINDORA**, your AI mental wellbeing companion.\n\nI'm here to listen without judgment, help you understand difficult feelings, and teach you practical tools like breathing, grounding, and journaling.\n\n**How are you feeling today?**"
   );
+  toggleQuickPrompts();
 }
 
 function startNewChat() {
   sessionId = null;
   localStorage.removeItem('mindora_session_id');
   messagesArea.innerHTML = '';
+  messageInput.value = '';
   initWelcome();
 }
 
-/** ═══════════ CHAT LOGIC ═══════════ */
+// ═══════════ CHAT LOGIC ═══════════
+
+// Store last user message for retry
+let lastUserMessage = '';
+let lastSessionId = null;
+let messageSentCount = 0;
+
+/**
+ * Resend the last user message (retry).
+ */
+async function retryLastMessage() {
+  if (!lastUserMessage) return;
+  messageInput.value = lastUserMessage;
+  await sendMessage();
+}
+
 async function sendMessage() {
   const text = messageInput.value.trim();
   if (!text || isSending) return;
@@ -383,8 +466,14 @@ async function sendMessage() {
   messageInput.value = '';
   messageInput.focus();
 
-  addMessage(text, 'user', {});
+  // Track last message for retry
+  lastUserMessage = text;
+  lastSessionId = sessionId;
 
+  addMessage(text, 'user', {});
+  toggleQuickPrompts();
+
+  messageSentCount++;
   isSending = true;
   sendBtn.disabled = true;
   showTyping();
@@ -400,8 +489,10 @@ async function sendMessage() {
 
     const data = await response.json();
     sessionId = data.sessionId;
+    lastSessionId = sessionId;
     localStorage.setItem('mindora_session_id', sessionId);
 
+    // Annotate last user message with sentiment/emotion
     const userDivs = messagesArea.querySelectorAll('.message.user');
     if (userDivs.length) {
       const lastUserDiv = userDivs[userDivs.length - 1];
@@ -413,19 +504,19 @@ async function sendMessage() {
       if (data.emotion) {
         const emotionChip = document.createElement('span');
         emotionChip.className = 'emotion-chip';
-        emotionChip.textContent = `${EMOTION_EMOJIS[data.emotion] || '😐'} ${data.emotion}`;
+        emotionChip.textContent = (EMOTION_EMOJIS[data.emotion] || '😐') + ' ' + data.emotion;
         metaDiv.appendChild(emotionChip);
       }
 
       const sentimentBadge = document.createElement('span');
-      sentimentBadge.className = `sentiment-badge sentiment-${data.sentiment || 'neutral'}`;
+      sentimentBadge.className = 'sentiment-badge sentiment-' + (data.sentiment || 'neutral');
       sentimentBadge.textContent = data.sentiment || 'neutral';
       metaDiv.appendChild(sentimentBadge);
 
       if (data.risk && data.risk.level && data.risk.level !== 'low') {
         const riskBadge = document.createElement('span');
-        riskBadge.className = `risk-badge risk-${data.risk.level}`;
-        riskBadge.textContent = `Risk: ${data.risk.score}/100`;
+        riskBadge.className = 'risk-badge risk-' + data.risk.level;
+        riskBadge.textContent = 'Risk: ' + data.risk.score + '/100';
         metaDiv.appendChild(riskBadge);
       }
 
@@ -441,7 +532,7 @@ async function sendMessage() {
 
   } catch (err) {
     removeTypingIndicator();
-    addBotMessage('I had trouble reaching my support service. Please try again in a moment. If this continues, please reach out to a trusted person or crisis resource. 💙');
+    addBotMessage('I had trouble reaching my support service. Please try again in a moment. If this continues, please reach out to a trusted person or crisis resource.');
     console.error('Chat error:', err);
   } finally {
     isSending = false;
@@ -450,7 +541,8 @@ async function sendMessage() {
   }
 }
 
-/** ═══════════ MODAL HELPERS ═══════════ */
+// ═══════════ MODAL HELPERS ═══════════
+
 function openModal(modal) {
   if (modal) modal.classList.add('active');
 }
@@ -459,16 +551,17 @@ function closeModal(modal) {
   if (modal) modal.classList.remove('active');
 }
 
-/** ═══════════ BREATHING EXERCISE ═══════════ */
+// ═══════════ BREATHING EXERCISE ═══════════
+
 let breathingTimer = null;
 let breathingRunning = false;
 let phaseInterval = null;
 
 const BREATHING_PHASES = [
-  { label: 'Breathe In', durationMs: 4000, cssClass: 'phase-in' },
-  { label: 'Hold', durationMs: 4000, cssClass: 'phase-hold' },
-  { label: 'Breathe Out', durationMs: 4000, cssClass: 'phase-out' },
-  { label: 'Hold', durationMs: 4000, cssClass: 'phase-hold' }
+  { label: 'Breathe In', durationMs: 4000 },
+  { label: 'Hold', durationMs: 4000 },
+  { label: 'Breathe Out', durationMs: 4000 },
+  { label: 'Hold', durationMs: 4000 }
 ];
 
 function startBreathing() {
@@ -488,9 +581,8 @@ function startBreathing() {
     if (!breathingRunning) return;
     const phase = BREATHING_PHASES[phaseIndex % BREATHING_PHASES.length];
 
-    circle.classList.remove('phase-in', 'phase-hold', 'phase-out');
-    void circle.offsetWidth;
-    circle.classList.add(phase.cssClass);
+    circle.style.transform = phaseIndex % 4 === 0 ? 'scale(1.15)' : phaseIndex % 4 === 2 ? 'scale(1)' : 'scale(1.15)';
+    circle.style.boxShadow = phaseIndex % 4 === 1 ? '0 12px 48px rgba(74,124,247,0.45)' : '0 8px 40px rgba(74,124,247,0.3)';
 
     phaseEl.textContent = phase.label;
 
@@ -522,10 +614,12 @@ function pauseBreathing() {
   document.getElementById('pauseBreathingBtn').disabled = true;
   document.getElementById('breathingPhase').textContent = 'Paused';
   document.getElementById('breathingCount').textContent = '💙';
-  document.getElementById('breathingCircle').classList.remove('phase-in', 'phase-hold', 'phase-out');
+  document.getElementById('breathingCircle').style.transform = 'scale(1)';
+  document.getElementById('breathingCircle').style.boxShadow = '0 8px 40px rgba(74,124,247,0.3)';
 }
 
-/** ═══════════ JOURNALING ═══════════ */
+// ═══════════ JOURNALING ═══════════
+
 const JOURNAL_PROMPTS = [
   '"My mind is feeling ___, and what I need right now is ___."',
   '"Today I noticed ___ in my body, and I think it connects to ___."',
@@ -542,7 +636,7 @@ let currentPromptIndex = 0;
 
 function showRandomJournalPrompt() {
   currentPromptIndex = Math.floor(Math.random() * JOURNAL_PROMPTS.length);
-  document.getElementById('journalPrompt').textContent = `${JOURNAL_PROMPTS[currentPromptIndex]}`;
+  document.getElementById('journalPrompt').textContent = JOURNAL_PROMPTS[currentPromptIndex];
   document.getElementById('journalText').value = '';
   document.getElementById('journalFeedback').textContent = '';
 }
@@ -550,7 +644,7 @@ function showRandomJournalPrompt() {
 async function saveJournal() {
   const text = document.getElementById('journalText').value.trim();
   if (!text) {
-    document.getElementById('journalFeedback').textContent = 'Write a few words first — no pressure. 💙';
+    document.getElementById('journalFeedback').textContent = 'Write a few words first — no pressure.';
     return;
   }
 
@@ -560,16 +654,16 @@ async function saveJournal() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
+          'Authorization': 'Bearer ' + authToken
         },
         body: JSON.stringify({
-          text,
+          text: text,
           prompt: JOURNAL_PROMPTS[currentPromptIndex]
         })
       });
       const data = await res.json();
       if (data.success) {
-        document.getElementById('journalFeedback').textContent = 'Saved 💙 Would you like to write another?';
+        document.getElementById('journalFeedback').textContent = 'Saved! Would you like to write another?';
         document.getElementById('journalText').value = '';
         loadUserData();
       } else {
@@ -581,16 +675,17 @@ async function saveJournal() {
   } else {
     journalHistory.unshift({
       prompt: JOURNAL_PROMPTS[currentPromptIndex],
-      text,
+      text: text,
       date: new Date().toISOString()
     });
     localStorage.setItem('mindora_journals', JSON.stringify(journalHistory.slice(0, 20)));
-    document.getElementById('journalFeedback').textContent = 'Saved 💙 Would you like to write another?';
+    document.getElementById('journalFeedback').textContent = 'Saved! Would you like to write another?';
     document.getElementById('journalText').value = '';
   }
 }
 
-/** ═══════════ MOOD TRACKER ═══════════ */
+// ═══════════ MOOD TRACKER ═══════════
+
 function updateMoodDisplay() {
   const value = parseInt(moodSlider.value, 10);
   moodNumber.textContent = value;
@@ -612,14 +707,14 @@ function renderMoodHistory() {
     entry.className = 'mood-entry';
     const d = new Date(m.time);
     const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-    entry.innerHTML = `<span>${moodEmojiFor(m.value)} ${m.value}/10</span><span>${time}</span>`;
+    entry.innerHTML = '<span>' + moodEmojiFor(m.value) + ' ' + m.value + '/10</span><span>' + time + '</span>';
     list.appendChild(entry);
   });
 }
 
 async function saveMood() {
   const value = parseInt(moodSlider.value, 10);
-  moodHistory.push({ value, time: new Date().toISOString() });
+  moodHistory.push({ value: value, time: new Date().toISOString() });
   localStorage.setItem('mindora_moods', JSON.stringify(moodHistory));
   renderMoodHistory();
 
@@ -629,9 +724,9 @@ async function saveMood() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
+          'Authorization': 'Bearer ' + authToken
         },
-        body: JSON.stringify({ value })
+        body: JSON.stringify({ value: value })
       });
       loadUserData();
     } catch (err) {
@@ -639,55 +734,60 @@ async function saveMood() {
     }
   }
 
-  messageInput.value = `I'm feeling ${value}/10 right now.`;
+  messageInput.value = "I'm feeling " + value + "/10 right now.";
   await sendMessage();
 }
 
-/** ═══════════ TOOL HANDLER ═══════════ */
+// ═══════════ TOOL HANDLER ═══════════
+
 function handleTool(tool) {
-  switch (tool) {
-    case 'breathing':
-      openModal(breathingModal);
-      break;
-    case 'journaling':
-      showRandomJournalPrompt();
-      openModal(journalingModal);
-      break;
-    case 'mood':
-      updateMoodDisplay();
-      renderMoodHistory();
-      openModal(moodModal);
-      break;
-    case 'grounding':
-      addBotMessage(
-        "🌿 **5-4-3-2-1 Grounding Exercise**\n\nLook around and name:\n• **5** things you can see\n• **4** things you can touch\n• **3** things you can hear\n• **2** things you can smell\n• **1** thing you can taste\n\nTake your time with each one. What did you notice?"
-      );
-      break;
-    case 'gratitude':
-      addBotMessage(
-        "🙏 Let's try a gratitude check-in. Name three things — however small — you're grateful for today.\n\n1. ...\n2. ...\n3. ...\n\nWhat's one of yours?"
-      );
-      break;
-    case 'sos':
-      openModal(sosModal);
-      break;
-    default:
-      break;
+  if (tool === 'sos') {
+    openModal(sosModal);
+    return;
+  }
+  if (tool === 'breathing') {
+    openModal(breathingModal);
+    return;
+  }
+  if (tool === 'journaling') {
+    showRandomJournalPrompt();
+    openModal(journalingModal);
+    return;
+  }
+  if (tool === 'mood') {
+    updateMoodDisplay();
+    renderMoodHistory();
+    openModal(moodModal);
+    return;
+  }
+  if (tool === 'grounding') {
+    addBotMessage(
+      "5-4-3-2-1 Grounding Exercise\n\nLook around and name:\n\u2022 5 things you can see\n\u2022 4 things you can touch\n\u2022 3 things you can hear\n\u2022 2 things you can smell\n\u2022 1 thing you can taste\n\nTake your time with each one. What did you notice?"
+    );
+    if (currentView !== 'chat') showView('chat');
+    return;
+  }
+  if (tool === 'gratitude') {
+    addBotMessage(
+      "Let's try a gratitude check-in. Name three things \u2014 however small \u2014 you're grateful for today.\n\n1. ...\n2. ...\n3. ...\n\nWhat's one of yours?"
+    );
+    if (currentView !== 'chat') showView('chat');
+    return;
   }
 }
 
-/** ═══════════ EVENT LISTENERS ═══════════ */
+// ═══════════ EVENT LISTENERS ═══════════
 
 // Auth
 document.getElementById('loginForm').addEventListener('submit', handleLogin);
 document.getElementById('registerForm').addEventListener('submit', handleRegister);
-document.getElementById('loginTab').addEventListener('click', () => {
+document.getElementById('loginTab').addEventListener('click', function() {
   document.getElementById('loginTab').classList.add('active');
   document.getElementById('registerTab').classList.remove('active');
   document.getElementById('loginForm').classList.remove('hidden');
   document.getElementById('registerForm').classList.add('hidden');
 });
-document.getElementById('registerTab').addEventListener('click', () => {
+document.getElementById('registerTab').addEventListener('click', function() {
   document.getElementById('registerTab').classList.add('active');
   document.getElementById('loginTab').classList.remove('active');
   document.getElementById('registerForm').classList.remove('hidden');
@@ -696,15 +796,15 @@ document.getElementById('registerTab').addEventListener('click', () => {
 document.getElementById('logoutBtn').addEventListener('click', handleLogout);
 
 // Navigation
-document.querySelectorAll('[data-nav]').forEach(btn => {
-  btn.addEventListener('click', () => showView(btn.dataset.nav));
+document.querySelectorAll('[data-nav]').forEach(function(btn) {
+  btn.addEventListener('click', function() { showView(btn.dataset.nav); });
 });
-document.getElementById('dashboardChatBtn').addEventListener('click', () => showView('chat'));
+document.getElementById('dashboardChatBtn').addEventListener('click', function() { showView('chat'); });
 
 // Mood selector on dashboard
-document.querySelectorAll('.mood-option').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.mood-option').forEach(b => b.classList.remove('selected'));
+document.querySelectorAll('.mood-option').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.mood-option').forEach(function(b) { b.classList.remove('selected'); });
     btn.classList.add('selected');
     saveMoodFromDashboard(parseInt(btn.dataset.mood, 10));
   });
@@ -712,31 +812,40 @@ document.querySelectorAll('.mood-option').forEach(btn => {
 
 // Chat
 sendBtn.addEventListener('click', sendMessage);
-
-messageInput.addEventListener('keypress', (e) => {
+messageInput.addEventListener('keypress', function(e) {
   if (e.key === 'Enter') sendMessage();
 });
-
 resetBtn.addEventListener('click', startNewChat);
 
+// Quick prompts
+if (quickPrompts) {
+  quickPrompts.addEventListener('click', function(e) {
+    const btn = e.target.closest('.quick-prompt-btn');
+    if (btn && btn.dataset.prompt) {
+      messageInput.value = btn.dataset.prompt;
+      sendMessage();
+    }
+  });
+}
+
 // Quick action & sidebar tool buttons
-document.querySelectorAll('[data-tool]').forEach(btn => {
-  btn.addEventListener('click', (e) => {
+document.querySelectorAll('[data-tool]').forEach(function(btn) {
+  btn.addEventListener('click', function(e) {
     e.preventDefault();
     handleTool(btn.dataset.tool);
   });
 });
 
 // Modal close buttons
-document.querySelectorAll('[data-close]').forEach(btn => {
-  btn.addEventListener('click', () => {
+document.querySelectorAll('[data-close]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
     closeModal(document.getElementById(btn.dataset.close));
   });
 });
 
 // Click outside modal closes it
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
-  overlay.addEventListener('click', (e) => {
+document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+  overlay.addEventListener('click', function(e) {
     if (e.target === overlay) closeModal(overlay);
   });
 });
@@ -754,26 +863,35 @@ moodSlider.addEventListener('input', updateMoodDisplay);
 document.getElementById('saveMoodBtn').addEventListener('click', saveMood);
 
 // ESC closes modals
-document.addEventListener('keydown', (e) => {
+document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
-    document.querySelectorAll('.modal-overlay.active').forEach(overlay => closeModal(overlay));
+    document.querySelectorAll('.modal-overlay.active').forEach(function(overlay) {
+      closeModal(overlay);
+    });
   }
 });
 
 // Stop breathing when closing the breathing modal
-breathingModal.addEventListener('click', (e) => {
-  if (e.target === breathingModal || e.target.dataset?.close === 'breathingModal') {
+breathingModal.addEventListener('click', function(e) {
+  if (e.target === breathingModal || e.target.dataset && e.target.dataset.close === 'breathingModal') {
     pauseBreathing();
   }
 });
 
-/** ═══════════ INIT ═══════════ */
+// Copy button retry handler (for retry buttons on bot messages)
+document.addEventListener('click', function(e) {
+  if (e.target.classList && e.target.classList.contains('retry-btn')) {
+    retryLastMessage();
+  }
+});
+
+// ═══════════ INIT ═══════════
+
 function init() {
   if (authToken) {
-    // Verify token is still valid
     fetch('/api/auth/me', {
-      headers: { 'Authorization': `Bearer ${authToken}` }
-    }).then(res => {
+      headers: { 'Authorization': 'Bearer ' + authToken }
+    }).then(function(res) {
       if (res.ok) {
         showApp();
       } else {
@@ -781,9 +899,7 @@ function init() {
         localStorage.removeItem('mindora_token');
         showAuth();
       }
-    }).catch(() => {
-      showAuth();
-    });
+    }).catch(function() { showAuth(); });
   } else {
     showAuth();
   }
