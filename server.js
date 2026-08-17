@@ -1,6 +1,6 @@
 /**
- * MindCare Chatbot - Express Server
- * Serves the frontend and provides /api endpoints for chat, analysis, and mood tracking.
+ * MINDORA - AI Mental Wellbeing Companion
+ * Express Server - serves frontend and provides API endpoints.
  */
 
 const express = require('express');
@@ -8,6 +8,7 @@ const path = require('path');
 const { generateResponse } = require('./src/engine');
 const { analyzeSentiment, classifyEmotion, detectEmphasis } = require('./src/sentiment');
 const { calculateRiskScore, crisisResources } = require('./src/crisis');
+const auth = require('./src/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,6 +26,153 @@ function getSession(sessionId) {
   }
   return sessions.get(sessionId);
 }
+
+// ─── Auth middleware ───
+function requireAuth(req, res, next) {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  const user = auth.getUserFromToken(token);
+  if (!user) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  req.user = user;
+  req.token = token;
+  next();
+}
+
+// ═══════════ AUTH ENDPOINTS ═══════════
+
+/**
+ * POST /api/auth/register
+ * Body: { username, password }
+ */
+app.post('/api/auth/register', async (req, res) => {
+  const { username, password } = req.body;
+  const result = await auth.registerUser(username, password);
+  if (!result.success) {
+    return res.status(400).json(result);
+  }
+  res.status(201).json(result);
+});
+
+/**
+ * POST /api/auth/login
+ * Body: { username, password }
+ */
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+  const result = await auth.loginUser(username, password);
+  if (!result.success) {
+    return res.status(401).json(result);
+  }
+  res.json(result);
+});
+
+/**
+ * POST /api/auth/logout
+ * Header: Authorization: Bearer <token>
+ */
+app.post('/api/auth/logout', (req, res) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  auth.logoutUser(token);
+  res.json({ success: true, message: 'Logged out.' });
+});
+
+/**
+ * GET /api/auth/me
+ * Header: Authorization: Bearer <token>
+ */
+app.get('/api/auth/me', requireAuth, (req, res) => {
+  res.json({ success: true, user: req.user });
+});
+
+/**
+ * PUT /api/auth/preferences
+ * Header: Authorization: Bearer <token>
+ * Body: { preferences }
+ */
+app.put('/api/auth/preferences', requireAuth, (req, res) => {
+  const result = auth.updatePreferences(req.user.username, req.body.preferences || {});
+  res.json(result);
+});
+
+// ═══════════ USER DATA ENDPOINTS ═══════════
+
+/**
+ * POST /api/mood
+ * Header: Authorization: Bearer <token>
+ * Body: { value, energy?, stress?, sleepQuality? }
+ */
+app.post('/api/mood', requireAuth, (req, res) => {
+  const { value, energy, stress, sleepQuality } = req.body;
+  if (!value || value < 1 || value > 10) {
+    return res.status(400).json({ error: 'Mood value must be 1-10' });
+  }
+  const result = auth.saveMoodEntry(req.user.username, { value, energy, stress, sleepQuality });
+  res.json(result);
+});
+
+/**
+ * POST /api/journal
+ * Header: Authorization: Bearer <token>
+ * Body: { text, prompt?, mood? }
+ */
+app.post('/api/journal', requireAuth, (req, res) => {
+  const { text, prompt, mood } = req.body;
+  if (!text || !text.trim()) {
+    return res.status(400).json({ error: 'Journal text is required' });
+  }
+  const result = auth.saveJournalEntry(req.user.username, { text, prompt, mood });
+  res.json(result);
+});
+
+/**
+ * DELETE /api/journal/:id
+ * Header: Authorization: Bearer <token>
+ */
+app.delete('/api/journal/:id', requireAuth, (req, res) => {
+  const result = auth.deleteJournalEntry(req.user.username, req.params.id);
+  res.json(result);
+});
+
+/**
+ * GET /api/user/data
+ * Header: Authorization: Bearer <token>
+ * Returns all user data (moods, journals, conversations)
+ */
+app.get('/api/user/data', requireAuth, (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      username: req.user.username,
+      preferences: req.user.preferences,
+      moodHistory: req.user.moodHistory || [],
+      journalEntries: req.user.journalEntries || [],
+      conversations: req.user.conversations || []
+    }
+  });
+});
+
+/**
+ * GET /api/user/export
+ * Header: Authorization: Bearer <token>
+ * Returns all user data for export
+ */
+app.get('/api/user/export', requireAuth, (req, res) => {
+  const result = auth.exportUserData(req.user.username);
+  res.json(result);
+});
+
+/**
+ * DELETE /api/user/account
+ * Header: Authorization: Bearer <token>
+ * Deletes the user account and all data
+ */
+app.delete('/api/user/account', requireAuth, (req, res) => {
+  const result = auth.deleteAccount(req.user.username);
+  res.json(result);
+});
+
+// ═══════════ CHAT ENDPOINTS ═══════════
 
 /**
  * POST /api/chat

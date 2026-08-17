@@ -1,16 +1,24 @@
 /**
- * MindCare Chatbot - Frontend Application
- * Handles chat interaction, sentiment badges, crisis banners, and wellness tool modals.
+ * MINDORA - AI Mental Wellbeing Companion
+ * Frontend Application - handles auth, dashboard, chat, and wellness tools.
  */
 
 // ═══════════ STATE ═══════════
-let sessionId = localStorage.getItem('mindcare_session_id') || null;
+let sessionId = localStorage.getItem('mindora_session_id') || null;
+let authToken = localStorage.getItem('mindora_token') || null;
+let currentUser = null;
 let isSending = false;
+let currentView = 'dashboard';
 
-const moodHistory = JSON.parse(localStorage.getItem('mindcare_moods') || '[]');
-const journalHistory = JSON.parse(localStorage.getItem('mindcare_journals') || '[]');
+const moodHistory = JSON.parse(localStorage.getItem('mindora_moods') || '[]');
+const journalHistory = JSON.parse(localStorage.getItem('mindora_journals') || '[]');
 
 // ═══════════ DOM REFERENCES ═══════════
+const authView = document.getElementById('authView');
+const appView = document.getElementById('appView');
+const dashboardView = document.getElementById('dashboardView');
+const chatView = document.getElementById('chatView');
+
 const messagesArea = document.getElementById('messagesArea');
 const messageInput = document.getElementById('messageInput');
 const sendBtn = document.getElementById('sendBtn');
@@ -37,11 +45,229 @@ const EMOTION_EMOJIS = {
 
 const MOOD_EMOJIS = ['😞', '😟', '😕', '😐', '🙂', '😊', '😄', '🤩'];
 
-/** ═══════════ MESSAGE RENDERING ═══════════ */
-// Escape helpers using char codes to avoid parser/formatter mangling
-const AMP = String.fromCharCode(38);  // &
-const LT = String.fromCharCode(60);   // <
-const GT = String.fromCharCode(62);   // >
+function moodEmojiFor(value) {
+  return MOOD_EMOJIS[Math.min(Math.floor(((value - 1) / 10) * 8), 7)];
+}
+
+function moodLabelFor(value) {
+  if (value <= 2) return 'Very Low';
+  if (value <= 4) return 'Low';
+  if (value <= 6) return 'Neutral';
+  if (value <= 8) return 'Good';
+  return 'Great';
+}
+
+// ═══════════ AUTH ═══════════
+
+function showAuth() {
+  authView.classList.remove('hidden');
+  appView.classList.add('hidden');
+}
+
+function showApp() {
+  authView.classList.add('hidden');
+  appView.classList.remove('hidden');
+  loadUserData();
+  showView('dashboard');
+}
+
+function showView(view) {
+  currentView = view;
+  if (view === 'dashboard') {
+    dashboardView.classList.remove('hidden');
+    chatView.classList.add('hidden');
+    document.querySelectorAll('[data-nav]').forEach(b => b.classList.remove('active'));
+    document.getElementById('navDashboard').classList.add('active');
+    renderDashboard();
+  } else {
+    dashboardView.classList.add('hidden');
+    chatView.classList.remove('hidden');
+    document.querySelectorAll('[data-nav]').forEach(b => b.classList.remove('active'));
+    document.getElementById('navChat').classList.add('active');
+    messageInput.focus();
+  }
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const feedback = document.getElementById('loginFeedback');
+
+  feedback.textContent = 'Signing in...';
+  feedback.className = 'auth-feedback';
+
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (!data.success) {
+      feedback.textContent = data.message;
+      feedback.className = 'auth-feedback error';
+      return;
+    }
+    authToken = data.token;
+    currentUser = data.user;
+    localStorage.setItem('mindora_token', authToken);
+    showApp();
+  } catch (err) {
+    feedback.textContent = 'Something went wrong. Please try again.';
+    feedback.className = 'auth-feedback error';
+  }
+}
+
+async function handleRegister(e) {
+  e.preventDefault();
+  const username = document.getElementById('registerUsername').value.trim();
+  const password = document.getElementById('registerPassword').value;
+  const feedback = document.getElementById('registerFeedback');
+
+  feedback.textContent = 'Creating account...';
+  feedback.className = 'auth-feedback';
+
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (!data.success) {
+      feedback.textContent = data.message;
+      feedback.className = 'auth-feedback error';
+      return;
+    }
+    // Auto-login after registration
+    const loginRes = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const loginData = await loginRes.json();
+    if (loginData.success) {
+      authToken = loginData.token;
+      currentUser = loginData.user;
+      localStorage.setItem('mindora_token', authToken);
+      showApp();
+    }
+  } catch (err) {
+    feedback.textContent = 'Something went wrong. Please try again.';
+    feedback.className = 'auth-feedback error';
+  }
+}
+
+async function handleLogout() {
+  try {
+    await fetch('/api/auth/logout', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${authToken}` }
+    });
+  } catch (err) {
+    // Ignore logout errors
+  }
+  authToken = null;
+  currentUser = null;
+  localStorage.removeItem('mindora_token');
+  localStorage.removeItem('mindora_session_id');
+  showAuth();
+}
+
+async function loadUserData() {
+  if (!authToken) return;
+  try {
+    const res = await fetch('/api/user/data', {
+      headers: { 'Authorization': `Bearer ${authToken}` }
+    });
+    const data = await res.json();
+    if (data.success) {
+      currentUser = data.data;
+      document.getElementById('dashboardUserName').textContent = currentUser.username ? `, ${currentUser.username}` : '';
+    }
+  } catch (err) {
+    console.error('Error loading user data:', err);
+  }
+}
+
+// ═══════════ DASHBOARD ═══════════
+
+async function saveMoodFromDashboard(value) {
+  if (!authToken) return;
+  const feedback = document.getElementById('moodFeedback');
+  feedback.textContent = 'Saving your mood...';
+
+  try {
+    const res = await fetch('/api/mood', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify({ value })
+    });
+    const data = await res.json();
+    if (data.success) {
+      feedback.textContent = `Thanks for sharing. You're feeling ${moodLabelFor(value)} today. 💙`;
+      feedback.className = 'mood-feedback success';
+      loadUserData();
+      renderDashboard();
+    } else {
+      feedback.textContent = data.message || 'Could not save mood.';
+      feedback.className = 'mood-feedback error';
+    }
+  } catch (err) {
+    feedback.textContent = 'Something went wrong. Please try again.';
+    feedback.className = 'mood-feedback error';
+  }
+}
+
+function renderDashboard() {
+  if (!currentUser) return;
+
+  // Today's mood
+  const moods = currentUser.moodHistory || [];
+  const today = new Date().toDateString();
+  const todayMoods = moods.filter(m => new Date(m.timestamp).toDateString() === today);
+  const todayMood = todayMoods.length > 0 ? todayMoods[todayMoods.length - 1].value : null;
+  document.getElementById('todayMood').textContent = todayMood ? `${moodEmojiFor(todayMood)} ${moodLabelFor(todayMood)}` : '—';
+
+  // Recent trend
+  const last7 = moods.slice(-7);
+  if (last7.length >= 2) {
+    const avg = last7.reduce((sum, m) => sum + m.value, 0) / last7.length;
+    const trend = avg >= 7 ? 'Positive' : avg >= 5 ? 'Steady' : avg >= 3 ? 'Challenging' : 'Difficult';
+    document.getElementById('moodTrend').textContent = trend;
+  } else {
+    document.getElementById('moodTrend').textContent = 'Keep tracking';
+  }
+
+  // Journal count
+  const journals = currentUser.journalEntries || [];
+  document.getElementById('journalCount').textContent = journals.length;
+
+  // Recent journal
+  const recentList = document.getElementById('recentJournalList');
+  if (journals.length === 0) {
+    recentList.innerHTML = '<p class="empty-state">Your journal is waiting for your first reflection.</p>';
+  } else {
+    recentList.innerHTML = '';
+    journals.slice(0, 3).forEach(entry => {
+      const div = document.createElement('div');
+      div.className = 'journal-preview';
+      const date = new Date(entry.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const text = entry.text.length > 100 ? entry.text.slice(0, 100) + '...' : entry.text;
+      div.innerHTML = `<span class="journal-date">${date}</span><p>${escapeHtml(text)}</p>`;
+      recentList.appendChild(div);
+    });
+  }
+}
+
+// ═══════════ MESSAGE RENDERING ═══════════
+const AMP = String.fromCharCode(38);
+const LT = String.fromCharCode(60);
+const GT = String.fromCharCode(62);
 
 function escapeHtml(str) {
   return String(str)
@@ -67,7 +293,6 @@ function addMessage(content, role, meta = {}) {
   bubble.innerHTML = formatMessage(content);
   messageDiv.appendChild(bubble);
 
-  // Sentiment / emotion meta for user messages
   if (role === 'user' && meta.sentiment) {
     const metaDiv = document.createElement('div');
     metaDiv.className = 'message-meta';
@@ -94,7 +319,6 @@ function addMessage(content, role, meta = {}) {
     messageDiv.appendChild(metaDiv);
   }
 
-  // Crisis banner for high/severe risk bot replies
   if (role === 'bot' && meta.crisis && meta.crisis.level && (meta.crisis.level === 'high' || meta.crisis.level === 'severe')) {
     const banner = document.createElement('div');
     banner.className = 'crisis-banner';
@@ -146,7 +370,7 @@ function initWelcome() {
 
 function startNewChat() {
   sessionId = null;
-  localStorage.removeItem('mindcare_session_id');
+  localStorage.removeItem('mindora_session_id');
   messagesArea.innerHTML = '';
   initWelcome();
 }
@@ -159,7 +383,6 @@ async function sendMessage() {
   messageInput.value = '';
   messageInput.focus();
 
-  // Add user bubble (meta will be updated after the API returns analysis)
   addMessage(text, 'user', {});
 
   isSending = true;
@@ -177,14 +400,11 @@ async function sendMessage() {
 
     const data = await response.json();
     sessionId = data.sessionId;
-    localStorage.setItem('mindcare_session_id', sessionId);
+    localStorage.setItem('mindora_session_id', sessionId);
 
-    // Replace the empty user bubble meta with real sentiment analysis
     const userDivs = messagesArea.querySelectorAll('.message.user');
     if (userDivs.length) {
       const lastUserDiv = userDivs[userDivs.length - 1];
-
-      // Remove any placeholder meta
       lastUserDiv.querySelectorAll('.message-meta').forEach(el => el.remove());
 
       const metaDiv = document.createElement('div');
@@ -214,7 +434,6 @@ async function sendMessage() {
 
     removeTypingIndicator();
 
-    // Bot reply (crisis banner will render automatically for high/severe)
     addBotMessage(data.reply, {
       crisis: data.crisis,
       risk: data.risk
@@ -270,12 +489,11 @@ function startBreathing() {
     const phase = BREATHING_PHASES[phaseIndex % BREATHING_PHASES.length];
 
     circle.classList.remove('phase-in', 'phase-hold', 'phase-out');
-    void circle.offsetWidth; // force reflow
+    void circle.offsetWidth;
     circle.classList.add(phase.cssClass);
 
     phaseEl.textContent = phase.label;
 
-    // Countdown display
     const totalSeconds = phase.durationMs / 1000;
     countEl.textContent = String(totalSeconds);
     let remaining = totalSeconds;
@@ -329,22 +547,47 @@ function showRandomJournalPrompt() {
   document.getElementById('journalFeedback').textContent = '';
 }
 
-function saveJournal() {
+async function saveJournal() {
   const text = document.getElementById('journalText').value.trim();
   if (!text) {
     document.getElementById('journalFeedback').textContent = 'Write a few words first — no pressure. 💙';
     return;
   }
 
-  journalHistory.unshift({
-    prompt: JOURNAL_PROMPTS[currentPromptIndex],
-    text,
-    date: new Date().toISOString()
-  });
-
-  localStorage.setItem('mindcare_journals', JSON.stringify(journalHistory.slice(0, 20)));
-  document.getElementById('journalFeedback').textContent = 'Saved 💙 Would you like to write another?';
-  document.getElementById('journalText').value = '';
+  if (authToken) {
+    try {
+      const res = await fetch('/api/journal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({
+          text,
+          prompt: JOURNAL_PROMPTS[currentPromptIndex]
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById('journalFeedback').textContent = 'Saved 💙 Would you like to write another?';
+        document.getElementById('journalText').value = '';
+        loadUserData();
+      } else {
+        document.getElementById('journalFeedback').textContent = data.message || 'Could not save.';
+      }
+    } catch (err) {
+      document.getElementById('journalFeedback').textContent = 'Could not save. Please try again.';
+    }
+  } else {
+    journalHistory.unshift({
+      prompt: JOURNAL_PROMPTS[currentPromptIndex],
+      text,
+      date: new Date().toISOString()
+    });
+    localStorage.setItem('mindora_journals', JSON.stringify(journalHistory.slice(0, 20)));
+    document.getElementById('journalFeedback').textContent = 'Saved 💙 Would you like to write another?';
+    document.getElementById('journalText').value = '';
+  }
 }
 
 /** ═══════════ MOOD TRACKER ═══════════ */
@@ -352,10 +595,6 @@ function updateMoodDisplay() {
   const value = parseInt(moodSlider.value, 10);
   moodNumber.textContent = value;
   moodEmoji.textContent = moodEmojiFor(value);
-}
-
-function moodEmojiFor(value) {
-  return MOOD_EMOJIS[Math.min(Math.floor(((value - 1) / 10) * 8), 7)];
 }
 
 function renderMoodHistory() {
@@ -381,10 +620,25 @@ function renderMoodHistory() {
 async function saveMood() {
   const value = parseInt(moodSlider.value, 10);
   moodHistory.push({ value, time: new Date().toISOString() });
-  localStorage.setItem('mindcare_moods', JSON.stringify(moodHistory));
+  localStorage.setItem('mindora_moods', JSON.stringify(moodHistory));
   renderMoodHistory();
 
-  // Send mood check-in as a chat message for engagement
+  if (authToken) {
+    try {
+      await fetch('/api/mood', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ value })
+      });
+      loadUserData();
+    } catch (err) {
+      // Ignore - local save already happened
+    }
+  }
+
   messageInput.value = `I'm feeling ${value}/10 right now.`;
   await sendMessage();
 }
@@ -423,6 +677,40 @@ function handleTool(tool) {
 }
 
 /** ═══════════ EVENT LISTENERS ═══════════ */
+
+// Auth
+document.getElementById('loginForm').addEventListener('submit', handleLogin);
+document.getElementById('registerForm').addEventListener('submit', handleRegister);
+document.getElementById('loginTab').addEventListener('click', () => {
+  document.getElementById('loginTab').classList.add('active');
+  document.getElementById('registerTab').classList.remove('active');
+  document.getElementById('loginForm').classList.remove('hidden');
+  document.getElementById('registerForm').classList.add('hidden');
+});
+document.getElementById('registerTab').addEventListener('click', () => {
+  document.getElementById('registerTab').classList.add('active');
+  document.getElementById('loginTab').classList.remove('active');
+  document.getElementById('registerForm').classList.remove('hidden');
+  document.getElementById('loginForm').classList.add('hidden');
+});
+document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+
+// Navigation
+document.querySelectorAll('[data-nav]').forEach(btn => {
+  btn.addEventListener('click', () => showView(btn.dataset.nav));
+});
+document.getElementById('dashboardChatBtn').addEventListener('click', () => showView('chat'));
+
+// Mood selector on dashboard
+document.querySelectorAll('.mood-option').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mood-option').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    saveMoodFromDashboard(parseInt(btn.dataset.mood, 10));
+  });
+});
+
+// Chat
 sendBtn.addEventListener('click', sendMessage);
 
 messageInput.addEventListener('keypress', (e) => {
@@ -480,4 +768,26 @@ breathingModal.addEventListener('click', (e) => {
 });
 
 /** ═══════════ INIT ═══════════ */
-initWelcome();
+function init() {
+  if (authToken) {
+    // Verify token is still valid
+    fetch('/api/auth/me', {
+      headers: { 'Authorization': `Bearer ${authToken}` }
+    }).then(res => {
+      if (res.ok) {
+        showApp();
+      } else {
+        authToken = null;
+        localStorage.removeItem('mindora_token');
+        showAuth();
+      }
+    }).catch(() => {
+      showAuth();
+    });
+  } else {
+    showAuth();
+  }
+  initWelcome();
+}
+
+init();

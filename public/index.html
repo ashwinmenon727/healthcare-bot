@@ -12,7 +12,53 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <div class="app-container">
+
+  <!-- ══════════ AUTH VIEW ══════════ -->
+  <div class="auth-view" id="authView">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="brand-logo">💙</div>
+        <h1>MINDORA</h1>
+        <p>Understand your feelings. Take the next step.</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="loginTab">Sign In</button>
+        <button class="auth-tab" id="registerTab">Create Account</button>
+      </div>
+
+      <form id="loginForm" class="auth-form">
+        <div class="form-group">
+          <label for="loginUsername">Username</label>
+          <input type="text" id="loginUsername" placeholder="Your username" autocomplete="username" required />
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" placeholder="Your password" autocomplete="current-password" required />
+        </div>
+        <button type="submit" class="btn auth-submit">Sign In</button>
+        <p class="auth-feedback" id="loginFeedback" aria-live="polite"></p>
+      </form>
+
+      <form id="registerForm" class="auth-form hidden">
+        <div class="form-group">
+          <label for="registerUsername">Username</label>
+          <input type="text" id="registerUsername" placeholder="Choose a username" autocomplete="username" required />
+        </div>
+        <div class="form-group">
+          <label for="registerPassword">Password</label>
+          <input type="password" id="registerPassword" placeholder="At least 6 characters" autocomplete="new-password" required />
+        </div>
+        <button type="submit" class="btn auth-submit">Create Account</button>
+        <p class="auth-feedback" id="registerFeedback" aria-live="polite"></p>
+      </form>
+
+      <p class="auth-disclaimer">MINDORA is an AI wellbeing companion — not a replacement for professional help.</p>
+    </div>
+  </div>
+
+  <!-- ══════════ APP VIEW (Dashboard + Chat) ══════════ -->
+  <div class="app-container hidden" id="appView">
 
     <!-- ══════════ SIDEBAR ══════════ -->
     <aside class="sidebar">
@@ -22,6 +68,16 @@
           <h1>MINDORA</h1>
           <span>Understand your feelings. Take the next step.</span>
         </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Navigation</h3>
+        <button class="tool-btn active" id="navDashboard" data-nav="dashboard">
+          <span>🏠</span> Dashboard
+        </button>
+        <button class="tool-btn" id="navChat" data-nav="chat">
+          <span>💬</span> Talk to MINDORA
+        </button>
       </div>
 
       <div class="sidebar-section">
@@ -47,13 +103,10 @@
       </div>
 
       <div class="sidebar-section">
-        <h3>How MINDORA helps</h3>
-        <ul class="feature-list">
-          <li>💬 Empathetic conversations</li>
-          <li>🧠 Sentiment & emotion analysis</li>
-          <li>🛡️ Crisis risk detection</li>
-          <li>🧘 Wellbeing exercises</li>
-        </ul>
+        <h3>Account</h3>
+        <button class="tool-btn" id="logoutBtn" title="Sign out">
+          <span>🚪</span> Sign Out
+        </button>
       </div>
 
       <div class="disclaimer">
@@ -62,44 +115,120 @@
       </div>
     </aside>
 
-    <!-- ══════════ MAIN CHAT AREA ══════════ -->
-    <main class="chat-container">
-      <header class="chat-header">
-        <div class="chat-title">
-          <h2>Talk to MINDORA</h2>
-          <span class="online-indicator"><span class="dot"></span> Always here for you</span>
+    <!-- ══════════ MAIN CONTENT ══════════ -->
+    <main class="main-content">
+
+      <!-- ══════════ DASHBOARD VIEW ══════════ -->
+      <section class="dashboard-view" id="dashboardView">
+        <header class="dashboard-header">
+          <div>
+            <h2>Welcome back<span id="dashboardUserName"></span></h2>
+            <p class="dashboard-subtitle">How are you feeling today?</p>
+          </div>
+        </header>
+
+        <!-- Mood selector -->
+        <div class="mood-selector-card">
+          <h3>How are you feeling today?</h3>
+          <div class="mood-selector" id="moodSelector">
+            <button class="mood-option" data-mood="1" title="Very Low">
+              <span class="mood-emoji-large">😞</span>
+              <span class="mood-label">Very Low</span>
+            </button>
+            <button class="mood-option" data-mood="3" title="Low">
+              <span class="mood-emoji-large">😟</span>
+              <span class="mood-label">Low</span>
+            </button>
+            <button class="mood-option" data-mood="5" title="Neutral">
+              <span class="mood-emoji-large">😐</span>
+              <span class="mood-label">Neutral</span>
+            </button>
+            <button class="mood-option" data-mood="7" title="Good">
+              <span class="mood-emoji-large">🙂</span>
+              <span class="mood-label">Good</span>
+            </button>
+            <button class="mood-option" data-mood="9" title="Great">
+              <span class="mood-emoji-large">😊</span>
+              <span class="mood-label">Great</span>
+            </button>
+          </div>
+          <p class="mood-feedback" id="moodFeedback" aria-live="polite"></p>
         </div>
-        <button class="reset-btn" id="resetBtn" title="Start a new conversation">↺ New chat</button>
-      </header>
 
-      <!-- Messages -->
-      <div class="messages-area" id="messagesArea">
-        <!-- Messages are injected by app.js -->
-      </div>
+        <!-- Dashboard cards -->
+        <div class="dashboard-grid">
+          <div class="dashboard-card">
+            <h4>Today's Mood</h4>
+            <div class="card-value" id="todayMood">—</div>
+            <p class="card-hint">Your mood check-in for today</p>
+          </div>
+          <div class="dashboard-card">
+            <h4>Recent Trend</h4>
+            <div class="card-value" id="moodTrend">—</div>
+            <p class="card-hint">Your mood over the last week</p>
+          </div>
+          <div class="dashboard-card">
+            <h4>Journal Entries</h4>
+            <div class="card-value" id="journalCount">0</div>
+            <p class="card-hint">Reflections you've written</p>
+          </div>
+          <div class="dashboard-card">
+            <h4>AI Companion</h4>
+            <div class="card-value">💬</div>
+            <p class="card-hint">Talk to MINDORA anytime</p>
+            <button class="btn small" id="dashboardChatBtn">Start a conversation</button>
+          </div>
+        </div>
 
-      <!-- Quick actions bar -->
-      <div class="quick-actions">
-        <button class="quick-btn" data-tool="breathing"><span>🫁</span> Breathing</button>
-        <button class="quick-btn" data-tool="journaling"><span>📔</span> Journal</button>
-        <button class="quick-btn" data-tool="mood"><span>📊</span> Mood check</button>
-        <button class="quick-btn" data-tool="grounding"><span>🌿</span> Grounding</button>
-        <button class="quick-btn sos-quick" data-tool="sos"><span>🆘</span> SOS</button>
-      </div>
+        <!-- Recent journal -->
+        <div class="dashboard-card recent-journal">
+          <h4>Recent Journal</h4>
+          <div id="recentJournalList">
+            <p class="empty-state">Your journal is waiting for your first reflection.</p>
+          </div>
+        </div>
+      </section>
 
-      <!-- Input area -->
-      <div class="input-area">
-        <input
-          type="text"
-          id="messageInput"
-          placeholder="Share what's on your mind..."
-          autocomplete="off"
-          maxlength="500"
-          aria-label="Type your message"
-        />
-        <button id="sendBtn" class="send-btn" title="Send message" aria-label="Send message">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-        </button>
-      </div>
+      <!-- ══════════ CHAT VIEW ══════════ -->
+      <section class="chat-view hidden" id="chatView">
+        <header class="chat-header">
+          <div class="chat-title">
+            <h2>Talk to MINDORA</h2>
+            <span class="online-indicator"><span class="dot"></span> Always here for you</span>
+          </div>
+          <button class="reset-btn" id="resetBtn" title="Start a new conversation">↺ New chat</button>
+        </header>
+
+        <!-- Messages -->
+        <div class="messages-area" id="messagesArea">
+          <!-- Messages are injected by app.js -->
+        </div>
+
+        <!-- Quick actions bar -->
+        <div class="quick-actions">
+          <button class="quick-btn" data-tool="breathing"><span>🫁</span> Breathing</button>
+          <button class="quick-btn" data-tool="journaling"><span>📔</span> Journal</button>
+          <button class="quick-btn" data-tool="mood"><span>📊</span> Mood check</button>
+          <button class="quick-btn" data-tool="grounding"><span>🌿</span> Grounding</button>
+          <button class="quick-btn sos-quick" data-tool="sos"><span>🆘</span> SOS</button>
+        </div>
+
+        <!-- Input area -->
+        <div class="input-area">
+          <input
+            type="text"
+            id="messageInput"
+            placeholder="Share what's on your mind..."
+            autocomplete="off"
+            maxlength="500"
+            aria-label="Type your message"
+          />
+          <button id="sendBtn" class="send-btn" title="Send message" aria-label="Send message">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          </button>
+        </div>
+      </section>
+
     </main>
   </div>
 

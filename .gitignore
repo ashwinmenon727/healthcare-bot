@@ -10,6 +10,14 @@ server.err.log
 .env
 .env.local
 
+# Data (user data, secrets)
+data/
+
+# Build artifacts
+dist/
+build/
+*.tgz
+
 # OS files
 .DS_Store
 Thumbs.db
